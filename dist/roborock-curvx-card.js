@@ -33,7 +33,7 @@ const style=[
 '.note{color:#c8bdd7;font-size:12px;margin-top:15px}',
 '@container(max-width:780px){.hero-right{width:64%;grid-template-columns:repeat(2,minmax(0,1fr))}.hero{min-height:540px}.overlay{min-height:540px}}',
 '@container(max-width:500px){.head{padding:13px}.head strong{font-size:17px}.content{padding:14px}nav{padding:7px}.overlay{padding:13px;min-height:560px}.hero{min-height:560px}.hero-right{width:74%;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.stat{min-height:58px;padding:7px}.stat b{font-size:15px}.stat small{font-size:10px}.hero-bottom{justify-content:center}.actions button{padding:10px}}',
-'@container(max-width:450px){.hero-right{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))}.stat b{font-size:15px}.hero-bottom{justify-content:center}}'
+'@container(max-width:450px){.hero-right{width:min(72%,290px);grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.stat{min-height:55px;padding:7px 8px}.stat b{font-size:13px;line-height:1.2}.stat small{font-size:10px;margin-bottom:3px}.hero-bottom{justify-content:center}}'
 ].join('');
 
 class RoborockCurvxCard extends HTMLElement{
