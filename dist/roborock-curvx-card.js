@@ -8,7 +8,33 @@ const groups={
  entretien:[["sensor","temps_restant_brosse_principale","Brosse principale"],["sensor","temps_restant_brosse_laterale","Brosse latérale"],["sensor","temps_restant_filtre","Filtre"],["sensor","temps_restant_capteurs","Capteurs"]],
  reglages:[["select","mode_de_nettoyage","Mode de nettoyage"],["select","intensite_de_frottement","Intensité de frottement"],["select","parcours_de_lavage_de_sol","Parcours"],["number","volume","Volume"],["switch","ne_pas_deranger","Ne pas déranger"]]
 };
-const style='.box{background:#181328;color:white;border-radius:24px;overflow:hidden;font-family:system-ui,sans-serif}.head{display:flex;align-items:center;justify-content:space-between;padding:22px;background:#20192f}.head strong{font-size:23px}.head span{font-size:13px;color:#d3c6e4}nav{display:flex;overflow-x:auto;gap:7px;padding:12px;background:#20192f}button{cursor:pointer;border:1px solid #6b538a;border-radius:12px;background:#392c51;color:white;padding:12px;font-weight:600}button.active,button.primary{background:#8055be}.hero{position:relative;min-height:330px;background-size:cover;background-position:center;display:flex;align-items:flex-end}.overlay{width:100%;padding:25px;background:linear-gradient(90deg,#171323ed,#17132355)}h2{margin:0 0 12px;font-size:29px}.stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:17px}.stat{padding:12px 18px;background:#20192cbb;border-radius:12px;min-width:100px}.stat b{display:block;font-size:24px}.stat small{color:#d6c8e6}.actions{display:flex;gap:10px;flex-wrap:wrap}.content{padding:22px}.rows{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px}.item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px;background:#2b233c;border-radius:13px;min-height:55px}.value{font-weight:700;color:#d8c1ff}select,input{max-width:150px;background:#4a3668;color:#fff;padding:8px;border:1px solid #8c6bb7;border-radius:8px}input[type=checkbox]{width:20px;height:20px;accent-color:#9066d1}.map{width:100%;max-height:570px;object-fit:contain;border-radius:16px;background:#292335}.note{color:#c8bdd7;font-size:12px;margin-top:15px}@media(max-width:600px){.head{padding:15px}.content{padding:14px}.overlay{padding:15px}.stat{padding:10px}.hero{min-height:300px}nav{padding:7px}button{padding:10px}}';
+const style=[
+'.box{background:#181328;color:white;border-radius:24px;overflow:hidden;font-family:system-ui,sans-serif}',
+'.head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:#19152b;gap:16px}',
+'.head strong{font-size:21px}.head span{font-size:13px;color:#d3c6e4}',
+'nav{display:flex;overflow-x:auto;gap:7px;padding:10px 14px;background:#19152b;scrollbar-width:thin}',
+'button{cursor:pointer;border:1px solid #846a99;border-radius:12px;background:#392c51;color:white;padding:12px;font-weight:600;white-space:nowrap}',
+'button.active,button.primary{background:#8055be}',
+'.hero{min-height:480px;background-size:cover;background-position:center;position:relative}',
+'.overlay{min-height:480px;padding:24px 26px;background:linear-gradient(90deg,rgba(16,12,26,.04) 0%,rgba(16,12,26,.02) 45%,rgba(16,12,26,.04) 100%);display:flex;flex-direction:column;justify-content:space-between;gap:22px}',
+'.hero-top{display:flex;justify-content:flex-end;align-items:flex-start}',
+'.hero-right{width:min(61%,670px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}',
+'.stat{min-width:0;min-height:87px;padding:12px 14px;background:rgba(30,30,39,.68);border:1px solid rgba(255,255,255,.35);border-radius:17px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;flex-direction:column;justify-content:center}',
+'.stat b{display:block;font-size:clamp(16px,1.8vw,25px);line-height:1.15;overflow-wrap:anywhere}',
+'.stat small{color:#f0ecf7;font-size:12px;margin-bottom:7px;line-height:1.2}',
+'.hero-bottom{display:flex;justify-content:flex-end}',
+'.actions{display:flex;gap:10px;flex-wrap:wrap}',
+'.content{padding:22px}.rows{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px}',
+'.item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px;background:#2b233c;border-radius:13px;min-height:55px}',
+'.value{font-weight:700;color:#d8c1ff}',
+'select,input{max-width:150px;background:#4a3668;color:#fff;padding:8px;border:1px solid #8c6bb7;border-radius:8px}',
+'input[type=checkbox]{width:20px;height:20px;accent-color:#9066d1}',
+'.map{width:100%;max-height:570px;object-fit:contain;border-radius:16px;background:#292335}',
+'.note{color:#c8bdd7;font-size:12px;margin-top:15px}',
+'@media(max-width:950px){.hero-right{width:66%;grid-template-columns:repeat(2,minmax(0,1fr))}.hero{min-height:540px}.overlay{min-height:540px}}',
+'@media(max-width:600px){.head{padding:13px}.head strong{font-size:17px}.content{padding:14px}nav{padding:7px}.overlay{padding:13px;min-height:560px}.hero{min-height:560px}.hero-right{width:76%;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.stat{min-height:65px;padding:8px}.stat b{font-size:16px}.stat small{font-size:11px}.hero-bottom{justify-content:center}.actions button{padding:10px}}'
+].join('');
+
 class RoborockCurvxCard extends HTMLElement{
  constructor(){super();this.attachShadow({mode:"open"});this.tab="accueil";this.conf={};this.root=document.createElement("div");this.shadowRoot.append(this.root)}
  setConfig(conf){this.conf=conf||{};this.draw()}
@@ -26,7 +52,8 @@ class RoborockCurvxCard extends HTMLElement{
   const nav=tabs.map(([id,label])=>'<button data-tab="'+id+'" class="'+(id===this.tab?"active":"")+'">'+label+'</button>').join("");
   let body="";
   if(this.tab==="accueil"){
-   body='<div class="hero"><div class="overlay"><h2>Roborock Qrevo CurvX</h2><div class="stats">'+[["Batterie",ent("sensor","batterie")],["Progression",ent("sensor","progression_du_nettoyage")],["Pièce",ent("sensor","piece_actuelle")]].map(([title,id])=>'<div class="stat"><b>'+this.escape(this.val(id))+'</b><small>'+title+'</small></div>').join("")+'</div>'+this.actions()+'</div></div><div class="content"><h3>Dernier nettoyage</h3><div class="rows">'+[["État",ent("sensor","etat")],["Surface",ent("sensor","surface_de_nettoyage")],["Durée",ent("sensor","duree_de_nettoyage")]].map(([title,id])=>'<div class="item">'+title+'<b>'+this.escape(this.val(id))+'</b></div>').join("")+'</div></div>';
+   const metrics=[["Batterie",ent("sensor","batterie")],["Progression",ent("sensor","progression_du_nettoyage")],["Pièce actuelle",ent("sensor","piece_actuelle")],["État",ent("sensor","etat")],["Surface",ent("sensor","surface_de_nettoyage")],["Durée",ent("sensor","duree_de_nettoyage")],["Eau propre",ent("binary_sensor","dock_reservoir_d_eau_propre")],["Eau sale",ent("binary_sensor","dock_reservoir_d_eau_sale")],["Nettoyages",ent("sensor","nombre_total_de_nettoyages")]];
+   body='<div class="hero"><div class="overlay"><div class="hero-top"><div class="hero-right">'+metrics.map(([title,id])=>'<div class="stat"><small>'+this.escape(title)+'</small><b>'+this.escape(this.val(id))+'</b></div>').join("")+'</div></div><div class="hero-bottom">'+this.actions()+'</div></div></div>';
   }else if(this.tab==="carte"){
    const img=this.state(map)?.attributes?.entity_picture;
    body='<div class="content"><h2>Carte du logement</h2>'+(img&&img.startsWith("/")?'<img class="map" id="map" alt="Carte Roborock">':'<p>Carte actuellement indisponible</p>')+'<p class="note">Affichage de la carte Roborock ; sélection tactile des pièces non incluse.</p>'+this.actions()+'</div>';
@@ -34,7 +61,7 @@ class RoborockCurvxCard extends HTMLElement{
    body='<div class="content"><h2>'+tabs.find(x=>x[0]===this.tab)[1]+'</h2>'+this.rows(this.tab)+(this.tab==="station"?'<p class="note">Le vidage et le lavage déclenchent des opérations physiques sur la station.</p>':'')+'</div>';
   }
   this.root.innerHTML='<style>'+style+'</style><div class="box"><div class="head"><strong>ROBOROCK CURVX</strong><span>'+this.escape(this.val(vac))+'</span></div><nav>'+nav+'</nav>'+body+'</div>';
-  const hero=this.root.querySelector(".hero");if(hero)hero.style.backgroundImage='linear-gradient(90deg,#15112288,#15112222),url("'+photo.replace(/["\\]/g,"")+'")';
+  const hero=this.root.querySelector(".hero");if(hero)hero.style.backgroundImage='url("'+photo.replace(/["\\]/g,"")+'")';
   const img=this.root.querySelector("#map");if(img){let path=this.state(map)?.attributes?.entity_picture;img.src=this.h.hassUrl?this.h.hassUrl(path):path;}
   this.root.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{this.tab=b.dataset.tab;this.draw()});
   this.root.querySelectorAll("[data-vac]").forEach(b=>b.onclick=()=>this.call("vacuum",b.dataset.vac,vac));
