@@ -12,6 +12,7 @@ const style=[
 ':host{display:block;width:100%;max-width:none;min-width:0;container-type:inline-size}.box{width:100%;background:#181328;color:white;border-radius:24px;overflow:hidden;font-family:system-ui,sans-serif}',
 '.head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:#19152b;gap:16px}',
 '.head strong{font-size:21px}.head span{font-size:13px;color:#d3c6e4}',
+'.connection-warning{padding:11px 18px;background:#563718;color:#ffe3b3;font-size:13px;border-top:1px solid #95622c}',
 'nav{display:flex;overflow-x:auto;gap:7px;padding:10px 14px;background:#19152b;scrollbar-width:thin}',
 'button{cursor:pointer;border:1px solid #846a99;border-radius:12px;background:#392c51;color:white;padding:12px;font-weight:600;white-space:nowrap}',
 'button.active,button.primary{background:#8055be}',
@@ -44,6 +45,7 @@ class RoborockCurvxCard extends HTMLElement{
  getGridOptions(){return {columns:12,min_columns:6,rows:8,min_rows:5}}
  escape(v){return String(v??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]))}
  state(id){return this.h?.states?.[id]}
+ valueUnavailable(id){const v=this.state(id);return !v||["unavailable","unknown"].includes(v.state)}
  val(id){let x=this.state(id);if(!x||["unknown","unavailable"].includes(x.state))return "—";let value=x.state;if(value==="charger_disconnected")value="Chargeur déconnecté";else if(value==="docked")value="Sur sa base";else if(value==="idle")value="Au repos";else if(/^-?\d+\.\d{4,}$/.test(value))value=new Intl.NumberFormat("fr-FR",{maximumFractionDigits:1}).format(Number(value));return value+(x.attributes.unit_of_measurement?" "+x.attributes.unit_of_measurement:"")}
  async call(d,a,id,more={}){try{await this.h.callService(d,a,{entity_id:id,...more})}catch(e){alert("Commande refusée : "+e.message)}}
  actions(){return '<div class="actions"><button class="primary" data-vac="start">▶ Démarrer</button><button data-vac="pause">Ⅱ Pause</button><button data-vac="return_to_base">⌂ Retour base</button></div>'}
@@ -62,7 +64,7 @@ class RoborockCurvxCard extends HTMLElement{
   }else{
    body='<div class="content"><h2>'+tabs.find(x=>x[0]===this.tab)[1]+'</h2>'+this.rows(this.tab)+(this.tab==="station"?'<p class="note">Le vidage et le lavage déclenchent des opérations physiques sur la station.</p>':'')+'</div>';
   }
-  this.root.innerHTML='<style>'+style+'</style><div class="box"><div class="head"><strong>ROBOROCK CURVX</strong><span>'+this.escape(this.val(vac))+'</span></div><nav>'+nav+'</nav>'+body+'</div>';
+  this.root.innerHTML='<style>'+style+'</style><div class="box"><div class="head"><strong>ROBOROCK CURVX</strong><span>'+this.escape(this.val(vac))+'</span></div>'+(this.valueUnavailable(vac)?'<div class="connection-warning">⚠️ Roborock indisponible dans Home Assistant : les données sont momentanément absentes. Vérifier l’intégration Roborock et la connexion du robot.</div>':'')+'<nav>'+nav+'</nav>'+body+'</div>';
   const hero=this.root.querySelector(".hero");if(hero)hero.style.backgroundImage='url("'+photo.replace(/["\\]/g,"")+'")';
   const img=this.root.querySelector("#map");if(img){let path=this.state(map)?.attributes?.entity_picture;img.src=this.h.hassUrl?this.h.hassUrl(path):path;}
   this.root.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{this.tab=b.dataset.tab;this.draw()});
