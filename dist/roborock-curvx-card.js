@@ -13,12 +13,13 @@ const style=[
 '.head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:#19152b;gap:16px}',
 '.head strong{font-size:21px}.head span{font-size:13px;color:#d3c6e4}',
 '.connection-warning{padding:11px 18px;background:#563718;color:#ffe3b3;font-size:13px;border-top:1px solid #95622c}',
-'nav{display:flex;overflow-x:auto;gap:7px;padding:10px 14px;background:#19152b;scrollbar-width:thin}',
-'button{cursor:pointer;border:1px solid #846a99;border-radius:12px;background:#392c51;color:white;padding:12px;font-weight:600;white-space:nowrap}',
-'button.active,button.primary{background:#8055be}',
+'nav{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin:12px 14px 13px;padding:5px;background:rgba(10,18,34,.72);border:1px solid rgba(155,177,209,.18);border-radius:15px;min-width:0}',
+'button{cursor:pointer;border:1px solid #846a99;border-radius:12px;background:#392c51;color:white;padding:12px;font-weight:600;white-space:nowrap}nav button{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:8px;min-width:0;padding:12px 7px;border:0;border-radius:11px;color:#afc0d7;background:transparent;font-size:13px;line-height:1.2;transition:background .15s,color .15s}nav button ha-icon{--mdc-icon-size:21px;flex-shrink:0}',
+'nav button.active{background:linear-gradient(140deg,#6c2a95,#44205d);color:white;font-weight:750;box-shadow:0 3px 12px rgba(0,0,0,.18)}button.primary{background:#8055be}',
 '.hero{min-height:480px;background-size:cover;background-position:center;position:relative}',
 '.overlay{min-height:480px;padding:24px 26px;background:linear-gradient(90deg,rgba(16,12,26,.04) 0%,rgba(16,12,26,.02) 45%,rgba(16,12,26,.04) 100%);display:flex;flex-direction:column;justify-content:space-between;gap:22px}',
 '.hero-top{display:flex;justify-content:flex-end;align-items:flex-start}',
+'.vac-state{position:absolute;top:12px;left:18px;padding:7px 12px;border-radius:22px;background:rgba(17,23,37,.62);color:#fff;font-size:12px;z-index:1}',
 '.hero-right{width:min(46%,520px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}',
 '.stat{min-width:0;min-height:62px;padding:7px 9px;background:rgba(30,30,39,.68);border:1px solid rgba(255,255,255,.35);border-radius:13px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;flex-direction:column;justify-content:center}',
 '.stat b{display:block;font-size:clamp(14px,1.5vw,20px);line-height:1.15;overflow-wrap:normal;word-break:normal;line-height:1.18}',
@@ -33,7 +34,7 @@ const style=[
 '.map{width:100%;max-height:570px;object-fit:contain;border-radius:16px;background:#292335}',
 '.note{color:#c8bdd7;font-size:12px;margin-top:15px}',
 '@container(max-width:780px){.hero-right{width:55%;grid-template-columns:repeat(2,minmax(0,1fr))}.hero{min-height:540px}.overlay{min-height:540px}}',
-'@container(max-width:500px){.head{padding:13px}.head strong{font-size:17px}.content{padding:14px}nav{padding:7px}.overlay{padding:13px;min-height:560px}.hero{min-height:560px}.hero-right{width:74%;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.stat{min-height:58px;padding:7px}.stat b{font-size:15px}.stat small{font-size:10px}.hero-bottom{justify-content:center}.actions button{padding:10px}}',
+'@container(max-width:500px){.head{padding:13px}.head strong{font-size:17px}.content{padding:14px}nav{display:flex;overflow-x:auto;margin:8px;padding:5px}nav button{font-size:11px;flex:0 0 auto;padding:10px 9px}nav button ha-icon{--mdc-icon-size:18px}.overlay{padding:13px;min-height:560px}.hero{min-height:560px}.hero-right{width:74%;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.stat{min-height:58px;padding:7px}.stat b{font-size:15px}.stat small{font-size:10px}.hero-bottom{justify-content:center}.actions button{padding:10px}}',
 '@container(max-width:450px){.hero-right{width:min(72%,290px);grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.stat{min-height:55px;padding:7px 8px}.stat b{font-size:13px;line-height:1.2}.stat small{font-size:10px;margin-bottom:3px}.hero-bottom{justify-content:center}}'
 ].join('');
 
@@ -53,18 +54,19 @@ class RoborockCurvxCard extends HTMLElement{
  draw(){
   if(!this.h)return;
   const vac=this.conf.vacuum||ent("vacuum",""),map=this.conf.map||ent("image","map_0"),photo=this.conf.background||"/local/roborock/roborock_salon.png";
-  const nav=tabs.map(([id,label])=>'<button data-tab="'+id+'" class="'+(id===this.tab?"active":"")+'">'+label+'</button>').join("");
+  const tabIcons={accueil:"mdi:home-outline",carte:"mdi:map-outline",historique:"mdi:history",station:"mdi:robot-vacuum",entretien:"mdi:tools",reglages:"mdi:cog-outline"};
+  const nav=tabs.map(([id,label])=>'<button type="button" data-tab="'+id+'" class="'+(id===this.tab?"active":"")+'" aria-current="'+(id===this.tab?"page":"false")+'"><ha-icon icon="'+tabIcons[id]+'"></ha-icon><span>'+label+'</span></button>').join("");
   let body="";
   if(this.tab==="accueil"){
    const metrics=[["Batterie",ent("sensor","batterie")],["Progression",ent("sensor","progression_du_nettoyage")],["Pièce actuelle",ent("sensor","piece_actuelle")],["État",ent("sensor","etat")],["Surface",ent("sensor","surface_de_nettoyage")],["Durée",ent("sensor","duree_de_nettoyage")],["Eau propre",ent("binary_sensor","dock_reservoir_d_eau_propre")],["Eau sale",ent("binary_sensor","dock_reservoir_d_eau_sale")],["Nettoyages",ent("sensor","nombre_total_de_nettoyages")]];
-   body='<div class="hero"><div class="overlay"><div class="hero-top"><div class="hero-right">'+metrics.map(([title,id])=>'<div class="stat"><small>'+this.escape(title)+'</small><b>'+this.escape(this.val(id))+'</b></div>').join("")+'</div></div><div class="hero-bottom">'+this.actions()+'</div></div></div>';
+   body='<div class="hero"><div class="overlay"><div class="hero-top"><span class="vac-state">'+this.escape(this.val(vac))+'</span><div class="hero-right">'+metrics.map(([title,id])=>'<div class="stat"><small>'+this.escape(title)+'</small><b>'+this.escape(this.val(id))+'</b></div>').join("")+'</div></div><div class="hero-bottom">'+this.actions()+'</div></div></div>';
   }else if(this.tab==="carte"){
    const img=this.state(map)?.attributes?.entity_picture;
    body='<div class="content"><h2>Carte du logement</h2>'+(img&&img.startsWith("/")?'<img class="map" id="map" alt="Carte Roborock">':'<p>Carte actuellement indisponible</p>')+'<p class="note">Affichage de la carte Roborock ; sélection tactile des pièces non incluse.</p>'+this.actions()+'</div>';
   }else{
    body='<div class="content"><h2>'+tabs.find(x=>x[0]===this.tab)[1]+'</h2>'+this.rows(this.tab)+(this.tab==="station"?'<p class="note">Le vidage et le lavage déclenchent des opérations physiques sur la station.</p>':'')+'</div>';
   }
-  this.root.innerHTML='<style>'+style+'</style><div class="box"><div class="head"><strong>ROBOROCK CURVX</strong><span>'+this.escape(this.val(vac))+'</span></div>'+(this.valueUnavailable(vac)?'<div class="connection-warning">⚠️ Roborock indisponible dans Home Assistant : les données sont momentanément absentes. Vérifier l’intégration Roborock et la connexion du robot.</div>':'')+'<nav>'+nav+'</nav>'+body+'</div>';
+  this.root.innerHTML='<style>'+style+'</style><div class="box">'+(this.valueUnavailable(vac)?'<div class="connection-warning">⚠️ Roborock indisponible dans Home Assistant : les données sont momentanément absentes. Vérifier l’intégration Roborock et la connexion du robot.</div>':'')+'<nav>'+nav+'</nav>'+body+'</div>';
   const hero=this.root.querySelector(".hero");if(hero)hero.style.backgroundImage='url("'+photo.replace(/["\\]/g,"")+'")';
   const img=this.root.querySelector("#map");if(img){let path=this.state(map)?.attributes?.entity_picture;img.src=this.h.hassUrl?this.h.hassUrl(path):path;}
   this.root.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{this.tab=b.dataset.tab;this.draw()});
