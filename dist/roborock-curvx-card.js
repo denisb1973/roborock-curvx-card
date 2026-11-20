@@ -15,7 +15,7 @@ const style=[
 '.connection-warning{padding:11px 18px;background:#563718;color:#ffe3b3;font-size:13px;border-top:1px solid #95622c}',
 'nav{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin:12px 14px 13px;padding:5px;background:rgba(10,18,34,.72);border:1px solid rgba(155,177,209,.18);border-radius:15px;min-width:0}',
 'button{cursor:pointer;border:1px solid #846a99;border-radius:12px;background:#392c51;color:white;padding:12px;font-weight:600;white-space:nowrap}nav button{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:8px;min-width:0;padding:12px 7px;border:0;border-radius:11px;color:#afc0d7;background:transparent;font-size:13px;line-height:1.2;transition:background .15s,color .15s}nav button ha-icon{--mdc-icon-size:21px;flex-shrink:0}',
-'nav button.active{background:linear-gradient(140deg,#6c2a95,#44205d);color:white;font-weight:750;box-shadow:0 3px 12px rgba(0,0,0,.18)}button.primary{background:#8055be}',
+'button{touch-action:manipulation;-webkit-tap-highlight-color:rgba(128,85,190,.3);min-height:44px;user-select:none;-webkit-user-select:none}nav button{min-height:48px}button:active{filter:brightness(1.25)}nav button.active{background:linear-gradient(140deg,#6c2a95,#44205d);color:white;font-weight:750;box-shadow:0 3px 12px rgba(0,0,0,.18)}button.primary{background:#8055be}',
 '.hero{min-height:480px;background-size:cover;background-position:center;position:relative}',
 '.overlay{min-height:480px;padding:24px 26px;background:linear-gradient(90deg,rgba(16,12,26,.04) 0%,rgba(16,12,26,.02) 45%,rgba(16,12,26,.04) 100%);display:flex;flex-direction:column;justify-content:space-between;gap:22px}',
 '.hero-top{display:flex;justify-content:flex-end;align-items:flex-start}',
@@ -25,7 +25,7 @@ const style=[
 '.stat b{display:block;font-size:clamp(14px,1.5vw,20px);line-height:1.15;overflow-wrap:normal;word-break:normal;line-height:1.18}',
 '.stat small{overflow-wrap:normal;word-break:normal;color:#f0ecf7;font-size:11px;margin-bottom:4px;line-height:1.2}',
 '.hero-bottom{display:flex;justify-content:flex-end}',
-'.actions{display:flex;gap:10px;flex-wrap:wrap}',
+'.actions{display:flex;gap:10px;flex-wrap:wrap}.actions button{min-height:48px;min-width:100px;padding:12px 15px}',
 '.content{padding:22px}.rows{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px}',
 '.item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px;background:#2b233c;border-radius:13px;min-height:55px}',
 '.value{font-weight:700;color:#d8c1ff}',
@@ -34,14 +34,36 @@ const style=[
 '.map{width:100%;max-height:570px;object-fit:contain;border-radius:16px;background:#292335}',
 '.note{color:#c8bdd7;font-size:12px;margin-top:15px}',
 '@container(max-width:780px){.hero-right{width:55%;grid-template-columns:repeat(2,minmax(0,1fr))}.hero{min-height:540px}.overlay{min-height:540px}}',
-'@container(max-width:500px){.head{padding:13px}.head strong{font-size:17px}.content{padding:14px}nav{display:flex;overflow-x:auto;margin:8px;padding:5px}nav button{font-size:11px;flex:0 0 auto;padding:10px 9px}nav button ha-icon{--mdc-icon-size:18px}.overlay{padding:13px;min-height:560px}.hero{min-height:560px}.hero-right{width:74%;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.stat{min-height:58px;padding:7px}.stat b{font-size:15px}.stat small{font-size:10px}.hero-bottom{justify-content:center}.actions button{padding:10px}}',
+'@container(max-width:500px){.head{padding:13px}.head strong{font-size:17px}.content{padding:14px}nav{display:flex;overflow-x:auto;margin:8px;padding:5px}nav button{font-size:11px;flex:0 0 auto;padding:11px 10px;min-height:48px}nav button ha-icon{--mdc-icon-size:18px}.overlay{padding:13px;min-height:560px}.hero{min-height:560px}.hero-right{width:74%;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.stat{min-height:58px;padding:7px}.stat b{font-size:15px}.stat small{font-size:10px}.hero-bottom{justify-content:center}.actions button{padding:11px 12px;min-height:48px}}',
 '@container(max-width:450px){.hero-right{width:min(72%,290px);grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.stat{min-height:55px;padding:7px 8px}.stat b{font-size:13px;line-height:1.2}.stat small{font-size:10px;margin-bottom:3px}.hero-bottom{justify-content:center}}'
 ].join('');
 
 class RoborockCurvxCard extends HTMLElement{
  constructor(){super();this.attachShadow({mode:"open"});this.tab="accueil";this.conf={};this.root=document.createElement("div");this.shadowRoot.append(this.root)}
  setConfig(conf){this.conf=conf||{};this.draw()}
- set hass(h){this.h=h;this.draw()}
+ set hass(h){
+  this.h=h;
+  // Update values without rebuilding buttons on each HA refresh.
+  if(!this._rendered){this.draw();return}
+  this.refreshStates();
+ }
+ refreshStates(){
+  if(!this.h||!this._rendered)return;
+  this.root.querySelectorAll("[data-state-id]").forEach(el=>{
+   const value=this.val(el.getAttribute("data-state-id"));
+   if(el.textContent!==value)el.textContent=value;
+  });
+  const vac=this.conf.vacuum||ent("vacuum","");
+  const warning=this.root.querySelector(".connection-warning");
+  if(warning)warning.hidden=!this.valueUnavailable(vac);
+  const img=this.root.querySelector("#map");
+  const map=this.conf.map||ent("image","map_0");
+  const src=this.state(map)?.attributes?.entity_picture;
+  if(img&&src?.startsWith("/")&&img.dataset.entityPicture!==src){
+   img.dataset.entityPicture=src;
+   img.src=this.h.hassUrl?this.h.hassUrl(src):src;
+  }
+ }
  getCardSize(){return 8}
  getGridOptions(){return {columns:12,min_columns:6,rows:8,min_rows:5}}
  escape(v){return String(v??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]))}
@@ -50,7 +72,7 @@ class RoborockCurvxCard extends HTMLElement{
  val(id){let x=this.state(id);if(!x||["unknown","unavailable"].includes(x.state))return "—";let value=x.state;if(value==="charger_disconnected")value="Chargeur déconnecté";else if(value==="docked")value="Sur sa base";else if(value==="idle")value="Au repos";else if(/^-?\d+\.\d{4,}$/.test(value))value=new Intl.NumberFormat("fr-FR",{maximumFractionDigits:1}).format(Number(value));return value+(x.attributes.unit_of_measurement?" "+x.attributes.unit_of_measurement:"")}
  async call(d,a,id,more={}){try{await this.h.callService(d,a,{entity_id:id,...more})}catch(e){alert("Commande refusée : "+e.message)}}
  actions(){return '<div class="actions"><button class="primary" data-vac="start">▶ Démarrer</button><button data-vac="pause">Ⅱ Pause</button><button data-vac="return_to_base">⌂ Retour base</button></div>'}
- rows(name){return '<div class="rows">'+groups[name].map(([d,s,label])=>{let id=ent(d,s),obj=this.state(id),value='<span class="value">'+this.escape(this.val(id))+'</span>';if(obj&&d==="switch")value='<input type="checkbox" data-switch="'+id+'" '+(obj.state==="on"?"checked":"")+'>';if(obj&&d==="select")value='<select data-select="'+id+'">'+(obj.attributes.options||[]).map(v=>'<option '+(v===obj.state?"selected":"")+'>'+this.escape(v)+'</option>').join("")+'</select>';if(obj&&d==="number")value='<input type="number" data-number="'+id+'" value="'+this.escape(obj.state)+'" min="'+this.escape(obj.attributes.min??0)+'" max="'+this.escape(obj.attributes.max??100)+'" step="'+this.escape(obj.attributes.step??1)+'">';return '<div class="item"><span>'+this.escape(label)+'</span>'+value+'</div>'}).join("")+'</div>'}
+ rows(name){return '<div class="rows">'+groups[name].map(([d,s,label])=>{let id=ent(d,s),obj=this.state(id),value='<span class="value">'+this.escape(this.val(id))+'</span>';if(obj&&d==="switch")value='<input type="checkbox" data-switch="'+id+'" '+(obj.state==="on"?"checked":"")+'>';if(obj&&d==="select")value='<select data-select="'+id+'">'+(obj.attributes.options||[]).map(v=>'<option '+(v===obj.state?"selected":"")+'>'+this.escape(v)+'</option>').join("")+'</select>';if(obj&&d==="number")value='<input type="number" data-number="'+id+'" value="'+this.escape(obj.state)+'" min="'+this.escape(obj.attributes.min??0)+'" max="'+this.escape(obj.attributes.max??100)+'" step="'+this.escape(obj.attributes.step??1)+'">';return '<div class="item"><span>'+this.escape(label)+'</span>'+(obj&&["switch","select","number"].includes(d)?value:'<span class="value" data-state-id="'+id+'">'+this.escape(this.val(id))+'</span>')+'</div>'}).join("")+'</div>'}
  draw(){
   if(!this.h)return;
   const vac=this.conf.vacuum||ent("vacuum",""),map=this.conf.map||ent("image","map_0"),photo=this.conf.background||"/local/roborock/roborock_salon.png";
@@ -59,7 +81,7 @@ class RoborockCurvxCard extends HTMLElement{
   let body="";
   if(this.tab==="accueil"){
    const metrics=[["Batterie",ent("sensor","batterie")],["Progression",ent("sensor","progression_du_nettoyage")],["Pièce actuelle",ent("sensor","piece_actuelle")],["État",ent("sensor","etat")],["Eau propre",ent("binary_sensor","dock_reservoir_d_eau_propre")],["Eau sale",ent("binary_sensor","dock_reservoir_d_eau_sale")]];
-   body='<div class="hero"><div class="overlay"><div class="hero-top"><span class="vac-state">'+this.escape(this.val(vac))+'</span><div class="hero-right">'+metrics.map(([title,id])=>'<div class="stat"><small>'+this.escape(title)+'</small><b>'+this.escape(this.val(id))+'</b></div>').join("")+'</div></div><div class="hero-bottom">'+this.actions()+'</div></div></div>';
+   body='<div class="hero"><div class="overlay"><div class="hero-top"><span class="vac-state" data-state-id="'+vac+'">'+this.escape(this.val(vac))+'</span><div class="hero-right">'+metrics.map(([title,id])=>'<div class="stat"><small>'+this.escape(title)+'</small><b data-state-id="'+id+'">'+this.escape(this.val(id))+'</b></div>').join("")+'</div></div><div class="hero-bottom">'+this.actions()+'</div></div></div>';
   }else if(this.tab==="carte"){
    const img=this.state(map)?.attributes?.entity_picture;
    body='<div class="content"><h2>Carte du logement</h2>'+(img&&img.startsWith("/")?'<img class="map" id="map" alt="Carte Roborock">':'<p>Carte actuellement indisponible</p>')+'<p class="note">Affichage de la carte Roborock ; sélection tactile des pièces non incluse.</p>'+this.actions()+'</div>';
@@ -74,6 +96,7 @@ class RoborockCurvxCard extends HTMLElement{
   this.root.querySelectorAll("[data-switch]").forEach(b=>b.onchange=()=>this.call("switch",b.checked?"turn_on":"turn_off",b.dataset.switch));
   this.root.querySelectorAll("[data-select]").forEach(b=>b.onchange=()=>this.call("select","select_option",b.dataset.select,{option:b.value}));
   this.root.querySelectorAll("[data-number]").forEach(b=>b.onchange=()=>this.call("number","set_value",b.dataset.number,{value:Number(b.value)}));
+  this._rendered=true;
  }
 }
 if(!customElements.get("roborock-curvx-card"))customElements.define("roborock-curvx-card",RoborockCurvxCard);
