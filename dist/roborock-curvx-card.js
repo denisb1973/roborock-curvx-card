@@ -58,7 +58,7 @@ class RoborockCurvxCard extends HTMLElement{
   const nav=tabs.map(([id,label])=>'<button type="button" data-tab="'+id+'" class="'+(id===this.tab?"active":"")+'" aria-current="'+(id===this.tab?"page":"false")+'"><ha-icon icon="'+tabIcons[id]+'"></ha-icon><span>'+label+'</span></button>').join("");
   let body="";
   if(this.tab==="accueil"){
-   const metrics=[["Batterie",ent("sensor","batterie")],["Progression",ent("sensor","progression_du_nettoyage")],["Pièce actuelle",ent("sensor","piece_actuelle")],["État",ent("sensor","etat")],["Surface",ent("sensor","surface_de_nettoyage")],["Durée",ent("sensor","duree_de_nettoyage")],["Eau propre",ent("binary_sensor","dock_reservoir_d_eau_propre")],["Eau sale",ent("binary_sensor","dock_reservoir_d_eau_sale")],["Nettoyages",ent("sensor","nombre_total_de_nettoyages")]];
+   const metrics=[["Batterie",ent("sensor","batterie")],["Progression",ent("sensor","progression_du_nettoyage")],["Pièce actuelle",ent("sensor","piece_actuelle")],["État",ent("sensor","etat")],["Eau propre",ent("binary_sensor","dock_reservoir_d_eau_propre")],["Eau sale",ent("binary_sensor","dock_reservoir_d_eau_sale")]];
    body='<div class="hero"><div class="overlay"><div class="hero-top"><span class="vac-state">'+this.escape(this.val(vac))+'</span><div class="hero-right">'+metrics.map(([title,id])=>'<div class="stat"><small>'+this.escape(title)+'</small><b>'+this.escape(this.val(id))+'</b></div>').join("")+'</div></div><div class="hero-bottom">'+this.actions()+'</div></div></div>';
   }else if(this.tab==="carte"){
    const img=this.state(map)?.attributes?.entity_picture;
